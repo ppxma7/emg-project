@@ -12,6 +12,8 @@ dataset = {
     'BOOT_01NB_GM_R_POSTBOOT_WALKING.mat'
     };
 
+%dataset = {'BOOT_01NB_GM_R_POSTBOOT_WALKING_WITHHEEL.mat'};
+
 fs = 2000;
 ord = 5;
 win_smp = 200;
@@ -26,6 +28,7 @@ wo = notch_freqs / (fs/2);
 bw = wo / 35;  % Q ~35
 
 thisMean = zeros(1, numel(dataset));
+thisMax = zeros(1, numel(dataset));
 
 for ii = 1:numel(dataset)
     close all
@@ -80,8 +83,10 @@ for ii = 1:numel(dataset)
         rms_all(:,ch) = movmean(emg_clean(:,ch).^2, win_smp).^0.5;
     end
 
-    rms_mean     = mean(rms_all, 2);
+    rms_mean = mean(rms_all, 2);
+    rms_max = max(rms_all,[],2);
     thisMean(ii) = mean(rms_mean);
+    thisMax(ii) = mean(rms_max);
 
     % --- Plot ---
     h = figure;
@@ -100,5 +105,6 @@ for ii = 1:numel(dataset)
 end
 
 % Summary
-T = table(dataset', thisMean', 'VariableNames', {'Condition', 'MeanRMS'});
+T = table(dataset', thisMean',thisMax', 'VariableNames', {'Condition', 'MeanRMS', 'MaxRMS'});
 disp(T);
+writetable(T, fullfile(mypath,'rms_summary.csv'));
